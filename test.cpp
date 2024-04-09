@@ -21,17 +21,17 @@ const unsigned int SCR_HEIGHT = 600;
 //用着色器语言GLSL编写顶点着色器的源代码
 //暂时将顶点着色器的源代码硬编码在C风格字符串中：
 const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
+								"layout (location = 0) in vec3 aPos;\n"
+								"void main()\n"
+								"{\n"
+								"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+								"}\0";
 const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
+								"out vec4 FragColor;\n"
+								"void main()\n"
+								"{\n"
+								"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+								"}\n\0";
 
 
 int main()
@@ -67,11 +67,14 @@ int main()
 		return -1;
 	}
 
-	//build and compile our shader program 建立遍历着色器项目？
+	//建立编译着色器项目  在运行时动态编译它的源代码。
 	//------------------------
-	// bertex shader
 	//顶点着色器
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+	//创建一个着色器对象，用ID来引用的。所以我们储存这个顶点着色器为unsigned int，然后用glCreateShader创建这个着色器：
+	//我们把 需要创建的着色器类型GL_VERTEX_SHADER   以参数形式提供给glCreateShader。由于我们正在创建一个顶点着色器，传递的参数是GL_VERTEX_SHADER。
+	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);  
+	//下一步我们把这个着色器源码附加到着色器对象上，然后编译它：
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
 
@@ -117,11 +120,8 @@ int main()
 	// set up vertex data (and buffer(s)) and configure vertex attributes
    // ------------------------------------------------------------------
 
-	
-	
-	
-	
-	
+
+
 	//绘制三角形开始---------------------------------------------------------------------------------------------------------------------------------------------------
 	float vertices[] = {
 		-0.5f, -0.5f, 0.0f, // left  
@@ -129,19 +129,22 @@ int main()
 		 0.0f,  0.5f, 0.0f  // top   
 	};
 
-	unsigned int VBO, VAO;
+	unsigned int VBO, VAO;  //顶点缓冲对象(Vertex Buffer Objects, VBO)管理这个内存
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &VBO);  //使用glGenBuffers函数和一个缓冲ID生成一个VBO对象：
+	
 	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
 	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//使用glBindBuffer函数把新创建的缓冲绑定到GL_ARRAY_BUFFER目标上,
+	//从这一刻起，我们使用的任何（在GL_ARRAY_BUFFER目标上的）缓冲调用都会用来配置当前绑定的缓冲(VBO)。
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);  
+	//然后我们可以调用glBufferData函数，它会把之前定义的顶点数据复制到缓冲的内存中									  
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+	//设置顶点属性指针
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
 	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
@@ -192,6 +195,21 @@ int main()
 //绘制三角形结束	--------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// 当用户改变窗口的大小的时候，视口也应该被调整
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
+}
 
 
 
@@ -199,15 +217,23 @@ int main()
 
 
 
-	/*
-//                   接下来绘制矩形 ！！！！！！！！！！！！！！！！                 
+
+
+
+
+
+
+
+
+/*
+//                   接下来绘制矩形 ！！！！！！！！！！！！！！！！
 // set up vertex data (and buffer(s)) and configure vertex attributes
 // ------------------------------------------------------------------
 	float vertices[] = {
 		 0.5f,  0.5f, 0.0f,  // top right
 		 0.5f, -0.5f, 0.0f,  // bottom right
 		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
+		-0.5f,  0.5f, 0.0f   // top left
 	};
 	unsigned int indices[] = {  // note that we start from 0!
 		0, 1, 3,  // first Triangle
@@ -261,7 +287,7 @@ int main()
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		// glBindVertexArray(0); // no need to unbind it every time 
+		// glBindVertexArray(0); // no need to unbind it every time
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -287,24 +313,9 @@ int main()
 
 
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-//使用GLFW的glfwGetKey函数实现输出控制，它需要一个窗口以及一个按键作为输入。这个函数将会返回这个按键是否正在被按下。
-//我们将创建一个processInput函数来让所有的输入代码保持整洁。
-//检查用户是否按下了返回键(Esc)（如果没有按下，glfwGetKey将会返回GLFW_RELEASE。
-//如果用户的确按下了返回键，我们将通过使用glfwSetwindowShouldClose把WindowShouldClose属性设置为 true来关闭GLFW
-void processInput(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// 当用户改变窗口的大小的时候，视口也应该被调整
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	// make sure the viewport matches the new window dimensions; note that width and 
-	// height will be significantly larger than specified on retina displays.
-	glViewport(0, 0, width, height);
-}
+	// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+	// ---------------------------------------------------------------------------------------------------------
+	//使用GLFW的glfwGetKey函数实现输出控制，它需要一个窗口以及一个按键作为输入。这个函数将会返回这个按键是否正在被按下。
+	//我们将创建一个processInput函数来让所有的输入代码保持整洁。
+	//检查用户是否按下了返回键(Esc)（如果没有按下，glfwGetKey将会返回GLFW_RELEASE。
+	//如果用户的确按下了返回键，我们将通过使用glfwSetwindowShouldClose把WindowShouldClose属性设置为 true来关闭GLFW
